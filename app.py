@@ -1274,6 +1274,9 @@ def preview(role, filename):
 # ============================================================
 # START APPLICATION
 # ============================================================
+@app.route("/favicon.ico")
+def favicon():
+    return "", 204
 
 if __name__ == "__main__":
 
