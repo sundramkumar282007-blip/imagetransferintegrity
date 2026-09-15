@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Transfer Integrity Console</title>
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<header class="topbar">
+    <div>
+        <h1>
+            <div class="eyebrow">IMAGE TRANSFER</div>
+        </h1>
+        <h1>Integrity Console</h1>
+    </div>
+    <div class="system-status">
+        <span class="status-dot"></span>
+        System Ready
+    </div>
+</header>
+
+<main class="container">
+    <section class="hero">
+        <div>
+            <div class="eyebrow">IMAGE TRANSFER</div>
+            <h2>Corruption Detector</h2>
+            <p>Verify image integrity using CRC algorithms and binary comparison.</p>
+        </div>
+        <div class="workflow">
+            <span><b>01</b> Select</span>
+            <span>→</span>
+            <span><b>02</b> Transfer</span>
+            <span>→</span>
+            <span><b>03</b> Verify</span>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="section-heading">
+            <div>
+                <div class="eyebrow">OVERVIEW</div>
+                <h3>Image Summary</h3>
+            </div>
+            <button id="resetBtn" class="button danger-outline">CLEAR DASHBOARD / RESET</button>
+        </div>
+
+        <div class="summary-grid">
+            <div class="summary-card">
+                <span>Original</span>
+                <strong id="originalSummary">Waiting</strong>
+            </div>
+            <div class="summary-card received-card">
+                <span>Received</span>
+                <strong id="receivedSummary">Waiting</strong>
+            </div>
+            <div class="summary-card">
+                <span>CRC Algorithm</span>
+                <strong id="algorithmSummary">CRC-32</strong>
+            </div>
+            <div class="summary-card">
+                <span>Overall Status</span>
+                <strong id="overallSummary">Waiting</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="image-grid">
+        <div class="panel">
+            <div class="panel-title">
+                <div>
+                    <div class="eyebrow blue-text">SOURCE</div>
+                    <h3>Original Image</h3>
+                </div>
+                <span class="badge blue">ORIGINAL</span>
+            </div>
+
+            <label class="upload-box">
+                <input type="file" id="originalInput" accept=".jpg,.jpeg,.png,.bmp,.gif,.tif,.tiff,.webp,image/*">
+                <span class="upload-icon">＋</span>
+                <strong>Select original image</strong>
+                <small>JPG, PNG, BMP, GIF, TIFF or WEBP</small>
+            </label>
+
+            <div class="preview-wrap">
+                <img id="originalPreview" class="preview hidden" alt="Original preview">
+                <div id="originalEmpty" class="empty-preview">No image selected</div>
+            </div>
+
+            <div class="metadata">
+                <div><span>Filename</span><strong id="originalFilename">—</strong></div>
+                <div><span>File size</span><strong id="originalSize">—</strong></div>
+                <div><span>CRC</span><strong id="originalCrc">—</strong></div>
+            </div>
+        </div>
+
+        <div class="panel received-panel">
+            <div class="panel-title">
+                <div>
+                    <div class="eyebrow orange-text">DESTINATION</div>
+                    <h3>Received Image</h3>
+                </div>
+                <span class="badge orange">RECEIVED</span>
+            </div>
+
+            <label class="upload-box">
+                <input type="file" id="receivedInput" accept=".jpg,.jpeg,.png,.bmp,.gif,.tif,.tiff,.webp,image/*">
+                <span class="upload-icon">＋</span>
+                <strong>Select received image</strong>
+                <small>JPG, PNG, BMP, GIF, TIFF or WEBP</small>
+            </label>
+
+            <div class="preview-wrap">
+                <img id="receivedPreview" class="preview hidden" alt="Received preview">
+                <div id="receivedEmpty" class="empty-preview">No image selected</div>
+            </div>
+
+            <div class="metadata">
+                <div><span>Filename</span><strong id="receivedFilename">—</strong></div>
+                <div><span>File size</span><strong id="receivedSize">—</strong></div>
+                <div><span>CRC</span><strong id="receivedCrc">—</strong></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="eyebrow">OPERATIONS</div>
+        <h3>Transfer Operations</h3>
+        <div class="button-row">
+            <button id="transferBtn" class="button orange">SIMULATE IMAGE TRANSFER</button>
+            <button id="corruptBtn" class="button danger">SIMULATE CORRUPTION</button>
+        </div>
+        <div id="corruptionInfo" class="notice hidden"></div>
+    </section>
+
+    <section class="two-column">
+        <div class="section panel">
+            <div class="eyebrow">CHECKSUM</div>
+            <h3>CRC Check Options</h3>
+
+            <label class="field-label" for="algorithm">CRC algorithm</label>
+            <select id="algorithm" class="select">
+                <option value="CRC-32">CRC-32</option>
+                <option value="CRC-32C">CRC-32C</option>
+            </select>
+
+            <div class="button-row">
+                <button id="calculateBtn" class="button primary">CALCULATE CRC</button>
+                <button id="verifyCrcBtn" class="button secondary">VERIFY CRC</button>
+            </div>
+
+            <div id="crcStatus" class="status-box waiting">CRC STATUS: WAITING</div>
+        </div>
+
+        <div class="section panel">
+            <div class="eyebrow">REFERENCE</div>
+            <h3>Reference CRC</h3>
+            <p class="muted">Save the current original image checksum for later validation.</p>
+
+            <div class="button-row">
+                <button id="saveReferenceBtn" class="button primary">SAVE REFERENCE</button>
+                <button id="checkReferenceBtn" class="button secondary">CHECK AGAINST REFERENCE</button>
+            </div>
+
+            <div id="referenceStatus" class="status-box waiting">REFERENCE: WAITING</div>
+        </div>
+    </section>
+
+    <section class="section panel">
+        <div class="eyebrow">BINARY ANALYSIS</div>
+        <h3>Byte-by-Byte Analysis</h3>
+        <button id="verifyBytesBtn" class="button primary">CHECK BYTE-BY-BYTE</button>
+
+        <div class="metrics-grid">
+            <div><span>Original size</span><strong id="byteOriginalSize">—</strong></div>
+            <div><span>Received size</span><strong id="byteReceivedSize">—</strong></div>
+            <div><span>Matching bytes</span><strong id="matchingBytes">—</strong></div>
+            <div><span>Different bytes</span><strong id="differentBytes">—</strong></div>
+            <div><span>First mismatch position</span><strong id="firstMismatch">—</strong></div>
+            <div><span>Similarity percentage</span><strong id="similarity">—</strong></div>
+        </div>
+
+        <div id="byteStatus" class="status-box waiting">BYTE-BY-BYTE STATUS: WAITING</div>
+    </section>
+
+    <section class="section verification-panel">
+        <div class="section-heading">
+            <div>
+                <div class="eyebrow">FINAL VALIDATION</div>
+                <h3>Verification Status</h3>
+            </div>
+            <button id="verifyBtn" class="button primary large">VERIFY IMAGE INTEGRITY</button>
+        </div>
+
+        <div class="verification-grid">
+            <div class="status-box waiting" id="verifyCrcStatus">CRC STATUS: WAITING</div>
+            <div class="status-box waiting" id="verifyByteStatus">BYTE-BY-BYTE STATUS: WAITING</div>
+            <div class="status-box waiting" id="corruptionStatus">CORRUPTION STATUS: WAITING</div>
+            <div class="status-box waiting" id="overallStatus">OVERALL STATUS: WAITING</div>
+        </div>
+    </section>
+
+    <section class="section">
+        <div class="eyebrow">VISUAL INSPECTION</div>
+        <h3>Side-by-Side Image Comparison</h3>
+        <div class="side-by-side">
+            <div>
+                <h4>Original</h4>
+                <img id="sideOriginal" class="comparison-image hidden" alt="Original comparison">
+            </div>
+            <div>
+                <h4>Received</h4>
+                <img id="sideReceived" class="comparison-image hidden" alt="Received comparison">
+            </div>
+        </div>
+    </section>
+
+    <section class="section panel">
+        <div class="eyebrow">EVENTS</div>
+        <h3>Activity Log</h3>
+        <div id="activityLog" class="activity-log">
+            <div class="log-entry"><span>System ready</span><time>now</time></div>
+        </div>
+    </section>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
